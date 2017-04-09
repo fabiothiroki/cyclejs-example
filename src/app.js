@@ -3,15 +3,11 @@ import xs from 'xstream'
 
 export function App (sources) {
 
-  // const searchIntent$ = sources.DOM.select
+  const state$ = model({
+    apiRequest$: sources.HTTP.select('api')
+  });
 
-
-  const vtree$ = sources.HTTP.select('api')
-    .flatten()
-    .map(res => res.body)
-    .startWith('null')
-    .map(renderState);
-
+  const vtree$ = view(state$);
 
   const request$ = xs.of(null)
     .mapTo({
@@ -25,10 +21,19 @@ export function App (sources) {
   };
 }
 
-function renderState(state) {
+function model(actions) { // Returns state
 
-  return div([
-    `Random number from server: ${state.name}`
-  ])
+  const character$ = actions.apiRequest$.flatten();
 
+  return character$
+  .map(res => res.body)
+  .startWith({name: 'Loading...'});
+}
+
+function view(state$) {
+  return state$.map( character => {
+    return div([
+      `Random number from server: ${character.name}`
+    ])
+  });
 }
