@@ -1,22 +1,29 @@
-import {div} from '@cycle/dom'
+import {div, h1} from '@cycle/dom'
 import xs from 'xstream'
 
 export function App (sources) {
 
-  const state$ = model({
-    apiRequest$: sources.HTTP.select('api')
-  });
+  const intents = {
+    apiResponse: sources.HTTP.select('api').flatten()
+  }
 
-  const vtree$ = view(state$);
+  const state = intents.apiResponse.map(res => {
+    return res.body.name;
+  })
+  .startWith('Loading');
 
-  const request$ = xs.of(null)
-    .mapTo({
-      url: 'https://swapi.co/api/people/1',
-      category: 'api',
+  const request$ = xs.of({
+    url: 'https://swapi.co/api/people/1',
+    category: 'api',
   });
 
   return {
-    DOM: vtree$,
+    state: state,
+    DOM: state.map((state) => {
+      return div([
+        h1("Hello World! " + state)
+      ])
+    }),
     HTTP: request$
   };
 }
@@ -26,7 +33,7 @@ function model(actions) { // Returns state
   const character$ = actions.apiRequest$.flatten();
 
   return character$
-  .map(res => res.body)
+  .map(res => {res.body})
   .startWith({name: 'Loading...'});
 }
 
