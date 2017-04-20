@@ -12,11 +12,6 @@ export function App (sources) {
   })
   .startWith('Loading');
 
-  const request$ = xs.of({
-    url: 'https://swapi.co/api/people/1',
-    category: 'api',
-  });
-
   return {
     state: state,
     DOM: state.map((state) => {
@@ -24,23 +19,9 @@ export function App (sources) {
         h1("Hello World! " + state)
       ])
     }),
-    HTTP: request$
+    HTTP: xs.of({
+      url: 'https://swapi.co/api/people/1',
+      category: 'api',
+    })
   };
-}
-
-function model(actions) { // Returns state
-
-  const character$ = actions.apiRequest$.flatten();
-
-  return character$
-  .map(res => {res.body})
-  .startWith({name: 'Loading...'});
-}
-
-function view(state$) {
-  return state$.map( character => {
-    return div([
-      `Random number from server: ${character.name}`
-    ])
-  });
 }
